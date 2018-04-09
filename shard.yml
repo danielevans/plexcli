@@ -1,0 +1,13 @@
+name: plexcli
+version: 0.1.0
+
+authors:
+  - Daniel Evans <evans.daniel.n@gmail.com>
+
+targets:
+  plexcli:
+    main: src/plexcli.cr
+
+crystal: 0.24.2
+
+license: MIT
