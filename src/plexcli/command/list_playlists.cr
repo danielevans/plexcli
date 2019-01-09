@@ -12,7 +12,7 @@ module PlexCLI
         if playlists.nil? || playlists["Metadata"]?.nil?
           puts "No Playlists Found"
         else
-          playlists["Metadata"].each do |playlist|
+          playlists["Metadata"].as_a.each do |playlist|
             puts "\"#{playlist["title"]?}\" (#{playlist["leafCount"]?} #{playlist["playlistType"]?} items)"
           end
         end

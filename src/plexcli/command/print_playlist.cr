@@ -18,9 +18,9 @@ module PlexCLI
           items = source.playlist(playlist["ratingKey"].to_s)
 
           unless items.nil? || items["MediaContainer"]?.nil? || items["MediaContainer"]["Metadata"]?.nil?
-            items["MediaContainer"]["Metadata"].each do |item|
-              item["Media"].each do |media|
-                media["Part"].each do |part|
+            items["MediaContainer"]["Metadata"].as_a.each do |item|
+              item["Media"].as_a.each do |media|
+                media["Part"].as_a.each do |part|
                   puts part["file"]
                 end
               end
@@ -30,7 +30,7 @@ module PlexCLI
       end
 
       def playlists_by_name(server : Server)
-        server.playlists["MediaContainer"]["Metadata"].each_with_object({} of String => JSON::Any) do |playlist, memo|
+        server.playlists["MediaContainer"]["Metadata"].as_a.each_with_object({} of String => JSON::Any) do |playlist, memo|
           title = playlist["title"]
           unless title.nil?
             memo[title.to_s] = playlist

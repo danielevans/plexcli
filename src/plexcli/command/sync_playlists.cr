@@ -27,10 +27,10 @@ module PlexCLI
           l = source.playlist(left[playlist_name]["ratingKey"].to_s)["MediaContainer"]["Metadata"]
           r = destination.playlist(right_playlist_id)["MediaContainer"]["Metadata"]
 
-          left_titles = l.map do |media|
+          left_titles = l.as_a.map do |media|
             [media["title"]?, media["parentTitle"]?, media["grandparentTitle"]?]
           end
-          right_titles = r.map do |media|
+          right_titles = r.as_a.map do |media|
             [media["title"]?, media["parentTitle"]?, media["grandparentTitle"]?]
           end
 
@@ -39,8 +39,8 @@ module PlexCLI
           puts "\"#{playlist_name}\" delta: #{missing.size} added, #{extra.size} removed. Committing."
 
           missing.each do |item|
-            response = destination.section_items(l.first["librarySectionID"].to_s, { "type" => "10", "X-Plex-Container-Start" => "0", "X-Plex-Container-Size" => "50", "title" => item.first.to_s })
-            items = response["MediaContainer"]["Metadata"].select do |match|
+            response = destination.section_items(l.as_a.first["librarySectionID"].to_s, { "type" => "10", "X-Plex-Container-Start" => "0", "X-Plex-Container-Size" => "50", "title" => item.first.to_s })
+            items = response["MediaContainer"]["Metadata"].as_a.select do |match|
               match["title"]? == item[0] && match["parentTitle"]? == item[1] && match["grandparentTitle"]? == item[2]
             end
             if items.size == 1
@@ -50,7 +50,7 @@ module PlexCLI
           end
 
           extra.each do |item|
-            remove_list = r.select do |media|
+            remove_list = r.as_a.select do |media|
               item == [media["title"]?, media["parentTitle"]?, media["grandparentTitle"]?]
             end
             remove_list.each do |item|
@@ -63,7 +63,7 @@ module PlexCLI
       end
 
       def playlists_by_name(server : Server)
-        server.playlists["MediaContainer"]["Metadata"].each_with_object({} of String => JSON::Any) do |playlist, memo|
+        server.playlists["MediaContainer"]["Metadata"].as_a.each_with_object({} of String => JSON::Any) do |playlist, memo|
           title = playlist["title"]
           unless title.nil?
             memo[title.to_s] = playlist
