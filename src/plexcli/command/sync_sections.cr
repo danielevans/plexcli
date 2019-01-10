@@ -26,6 +26,7 @@ module PlexCLI
         right = media destination, destination_section
 
         left.each do |source_metum|
+          # source_metum = left.first
           destination_metum = right.find { |metum| metum.path == source_metum.path }
 
           unless destination_metum.nil?
@@ -41,6 +42,18 @@ module PlexCLI
 
             if removed.size > 0
               destination.set_collections destination_section["key"].as_s, destination_metum.key, destination_section["type"].as_s, removed, true
+            end
+
+            values = {} of String => String
+
+            if source_metum.metum["title"] != destination_metum.metum["title"]
+              values["title.value"] = source_metum.metum["title"].as_s
+              values["title.locked"] = "1"
+            end
+
+
+            unless values.empty?
+              destination.set_media_metadata(destination_section["key"].as_s, destination_metum.key, destination_section["type"].as_s, values)
             end
           end
         end

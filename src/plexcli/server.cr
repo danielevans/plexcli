@@ -60,7 +60,6 @@ module PlexCLI
         items_params[key] = value
       end
       response = connection.get "/library/sections/#{id}/all?#{items_params.to_s}", headers
-      puts response.body
       JSON.parse(response.body)
     end
 
@@ -92,6 +91,20 @@ module PlexCLI
       end
       response = connection.put "/library/sections/#{section_id}/all?#{query_params.to_s}", headers
     end
+
+
+    def set_media_metadata(section_id : String, id : String, media_type : String, metadata : Hash(String, String))
+      query_params = params
+      query_params["id"] = id
+      query_params["type"] = self.class.media_type(media_type).to_s
+
+      metadata.each_key do |key|
+        query_params[key] = metadata[key]
+      end
+
+      response = connection.put "/library/sections/#{section_id}/all?#{query_params.to_s}", headers
+    end
+
 
     def params
       HTTP::Params.new({
