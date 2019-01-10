@@ -8,11 +8,12 @@ module PlexCLI
   def self.parse
     options = @@options = { :token => ENV["X-Plex-Token"]? } of Symbol => String | Nil
     OptionParser.parse! do |parser|
-      parser.banner = "Usage: plexcli command [arguments]\ncommands: help, h, ls, sync_playlists, print_playlist"
+      parser.banner = "Usage: plexcli command [arguments]\ncommands: help, h, ls, list_playlists, sync_playlists, print_playlist, list_sections, print_section"
       parser.on("-s SERVER", "--server=SERVER", "server url") { |server| options[:server] = server }
       parser.on("-d SERVER", "--destination-server=SERVER", "server 2 url") { |server| options[:server2] = server }
       parser.on("-p TOKEN", "--plex-token TOKEN", "Plex authentication token") { |token| options[:token] = token }
       parser.on("-l LIST", "--playlist LIST", "Playlist Name") { |list| options[:playlist] = list }
+      parser.on("-e", "--section SECTION", "Section Name") { |section| options[:section] = section }
       parser.on("-h", "--help") { options[:command] = "help" }
       parser.unknown_args do |argv|
         options[:command] = argv.first?
@@ -56,6 +57,30 @@ module PlexCLI
       list = options[:playlist]
       unless uri.nil? || list.nil?
         command = Command::PrintPlaylist.new  Server.new(URI.parse(uri), token), list
+        command.run
+      end
+
+    when "list_sections"
+      uri = options[:server]
+      unless uri.nil?
+        command = Command::ListSections.new  Server.new(URI.parse(uri), token)
+        command.run
+      end
+    when "print_section"
+      uri = options[:server]
+      section = options[:section]
+      unless uri.nil? || section.nil?
+        command = Command::ListTags.new  Server.new(URI.parse(uri), token), section
+        command.run
+      end
+    when "sync_sections"
+      uri = options[:server]
+      uri2 = options[:server2]
+      section = options[:section]
+      unless uri.nil? || uri2.nil?
+        server1 = Server.new(URI.parse(uri), token)
+        server2 = Server.new(URI.parse(uri2), token)
+        command = Command::SyncSections.new server1, server2, section
         command.run
       end
     else

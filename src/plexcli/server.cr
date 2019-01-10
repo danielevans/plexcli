@@ -60,10 +60,38 @@ module PlexCLI
         items_params[key] = value
       end
       response = connection.get "/library/sections/#{id}/all?#{items_params.to_s}", headers
+      puts response.body
       JSON.parse(response.body)
     end
 
 
+    def all_section_items(id : String)
+      query = params
+      query["type"] = "1"
+      query["includeCollection"] = "1"
+      query["X-Plex-Container-Start"] = "0"
+      query["X-Plex-Container-Size"] = "1000000"
+      response = connection.get "/library/sections/#{id}/all", headers, query.to_s
+      JSON.parse(response.body)
+    end
+
+
+    def set_collections(section_id : String, id : String, media_type : String, tags : Array(String), remove : Bool = false)
+      query_params = params
+      query_params["id"] = id
+      query_params["type"] = self.class.media_type(media_type).to_s
+
+      # tag_params = HTTP::Params.new
+      if remove
+        query_params["collection[].tag.tag-"] = tags.join(",")
+      else
+        tags.each_with_index do |tag, i|
+          key = "collection[#{i}].tag.tag"
+          query_params[key] = tag
+        end
+      end
+      response = connection.put "/library/sections/#{section_id}/all?#{query_params.to_s}", headers
+    end
 
     def params
       HTTP::Params.new({
@@ -77,6 +105,29 @@ module PlexCLI
         h["X-Plex-Token"] = @token
         h["Accept"] = ["application/json"]
       end
+    end
+
+    def self.media_type(t : String)
+      {
+        "movie" => 1,
+        "show" => 2,
+        "season" => 3,
+        "episode" => 4,
+        "trailer" => 5,
+        "comic" => 6,
+        "person" => 7,
+        "artist" => 8,
+        "album" => 9,
+        "track" => 10,
+        "photoAlbum" => 11,
+        "picture" => 12,
+        "photo" => 13,
+        "clip" => 14,
+        "playlistItem" => 15,
+        "playlistFolder"=> 16,
+        "collection"=> 18,
+        "userPlaylistItem"=> 1001
+      }[t]
     end
   end
 end
