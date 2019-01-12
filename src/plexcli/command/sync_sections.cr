@@ -22,6 +22,7 @@ module PlexCLI
         destination_section = find_section destination
 
         raise ArgumentError.new "Section does not exist on both servers" if source_section.nil? || destination_section.nil?
+
         left = media source, source_section
         right = media destination, destination_section
 
@@ -46,11 +47,12 @@ module PlexCLI
 
             values = {} of String => String
 
-            if source_metum.metum["title"] != destination_metum.metum["title"]
-              values["title.value"] = source_metum.metum["title"].as_s
-              values["title.locked"] = "1"
+            %w{title rating userRating}.each do |key|
+              if source_metum.metum[key]? != destination_metum.metum[key]?
+                values["#{key}.value"] = source_metum.metum[key]?.to_s
+                values["#{key}.locked"] = "1"
+              end
             end
-
 
             unless values.empty?
               destination.set_media_metadata(destination_section["key"].as_s, destination_metum.key, destination_section["type"].as_s, values)
